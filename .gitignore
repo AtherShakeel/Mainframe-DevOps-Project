@@ -1,0 +1,9 @@
+# Ignore Windows system files
+Thumbs.db
+Desktop.ini
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore temporary logs
+*.log
