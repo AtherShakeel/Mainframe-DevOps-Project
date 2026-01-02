@@ -54,8 +54,20 @@ zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myU
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
-$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
+$rawOutput = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD --rfj
+$compJob = $rawOutput | ConvertFrom-Json
+
+if ($null -eq $compJob.data) {
+   Write-Log "CRITICAL ERROR: Zowe did not return valid JSON data." "Red"
+   Write-Host "Raw output was: $rawOutput" -ForegroundColor Gray
+   exit 1
+}
+
 Write-Log $compJob.data.retcode  "Red"
+
+$rc = $compJob.data.retcode
+Write-Log "Mainframe Return Code: $rc" "Cyan"
+
 if ($compJob.data.retcode -eq " CC 0000") {
    Write-Log "SUCCESS: Compilation Clean." "Green"
 
