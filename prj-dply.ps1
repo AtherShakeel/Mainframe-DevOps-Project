@@ -54,35 +54,36 @@ zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myU
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
-$rawOutput = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD --rfj
+$rawOutput = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output  --user $myUSER_ID --pass $myPASSWORD --rfj
 $compJob = $rawOutput | ConvertFrom-Json
 
-if ($null -eq $compJob.data) {
-   Write-Log "CRITICAL ERROR: Zowe did not return valid JSON data." "Red"
-   Write-Host "Raw output was: $rawOutput" -ForegroundColor Gray
+$jobId = $compJob.data.jobid
+$rc = $compJob.data.retcode
+
+Write-Log "Mainframe Return Code: $rc" "Cyan"
+
+if ($rc -eq "CC 0000") {
+   Write-Log "✅ SUCCESS: Compilation Clean." "Green"
+}
+else {
+   Write-Log "❌ ERROR: Compilation Failed with $rc. Fetching Spool..." "Red"
+   # ONLY fetch the heavy spool content if there is an actual error
+   zowe jobs view all-job-spool-content $jobId --user $myUSER_ID --pass $myPASSWORD
    exit 1
 }
 
-Write-Log $compJob.data.retcode  "Red"
+# --- 6. AUTO-TEST ---
+Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
+$runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
 
-$rc = $compJob.data.retcode
-Write-Log "Mainframe Return Code: $rc" "Cyan"
-
-if ($compJob.data.retcode -eq " CC 0000") {
-   Write-Log "SUCCESS: Compilation Clean." "Green"
-
-   # --- 6. AUTO-TEST ---
-   Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
-   $runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
-
-   $expected = "VibeGarden Result: 150"
-   if ($runJob -match $expected) {
-      Write-Log "TEST PASSED: Output matches expectation." "Green"
-   }
-   else {
-      Write-Log "TEST FAILED: Logic error detected." "Red"; exit
-   }
+$expected = "VibeGarden Result: 150"
+if ($runJob -match $expected) {
+   Write-Log "TEST PASSED: Output matches expectation." "Green"
 }
+else {
+   Write-Log "TEST FAILED: Logic error detected." "Red"; exit
+}
+
 else {
    Write-Log "COMPILE FAILED. Check SYSOUT." "Red"; exit
 }
