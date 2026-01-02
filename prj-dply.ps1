@@ -5,13 +5,13 @@ $localRun = "JCL\RUNJCL.jcl"
 
 
 # --- 1. SECURITY & CONFIG ---
-#$USER_ID = $env:ZOWE_USER
-#$PASSWORD = $env:ZOWE_PASSWORD
+$myUSER_ID_ID = $env:ZOWE_USER
+$myPASSWORD = $env:ZOWE_PASSWORD
 
-#if (-not $USER_ID -or -not $PASSWORD) {
-#   Write-Error "CRITICAL: ZOWE_USER or ZOWE_PASSWORD not found in Environment Variables!"
-#   exit
-#}
+if (-not $myUSER_ID_ID -or -not $myPASSWORD) {
+   Write-Error "CRITICAL: ZOWE_USER or ZOWE_PASSWORD not found in Environment Variables!"
+   exit
+}
 
 $CBL_PDS = "$USER_ID.ZMYPRSNL.COBOL"
 $JCL_PDS = "$USER_ID.ZMYPRSNL.JCL"
@@ -47,7 +47,7 @@ git push origin main
 
 # --- 4. MAINFRAME UPLOAD ---
 Write-Log "[3/6] Uploading files to $USER_ID libraries..." "Yellow"
-zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
+zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $myUSER_ID --pass $myPASSWORD
 if ($LASTEXITCODE -eq 0) {
    Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
 }
@@ -55,19 +55,19 @@ else {
    Write-Host "❌ ERROR: Upload failed. Check your credentials and paths." -ForegroundColor Red
    exit $LASTEXITCODE
 }
-zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
-zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
+zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user $myUSER_ID --pass $myPASSWORD
+zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myUSER_ID --pass $myPASSWORD
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
-$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
+$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
 
 if ($compJob -match "retcode: CC 0000") {
    Write-Log "SUCCESS: Compilation Clean." "Green"
 
    # --- 6. AUTO-TEST ---
    Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
-   $runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
+   $runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
 
    $expected = "VibeGarden Result: 150"
    if ($runJob -match $expected) {
