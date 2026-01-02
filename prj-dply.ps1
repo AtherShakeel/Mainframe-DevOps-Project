@@ -56,7 +56,21 @@ else {
    exit $LASTEXITCODE
 }
 zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user $myUSER_ID --pass $myPASSWORD
+if ($LASTEXITCODE -eq 0) {
+   Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
+}
+else {
+   Write-Host "❌ ERROR: COMPJCL Upload failed. Check your credentials and paths." -ForegroundColor Red
+   exit $LASTEXITCODE
+}
 zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myUSER_ID --pass $myPASSWORD
+if ($LASTEXITCODE -eq 0) {
+   Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
+}
+else {
+   Write-Host "❌ ERROR: RUNJCL Upload failed. Check your credentials and paths." -ForegroundColor Red
+   exit $LASTEXITCODE
+}
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
