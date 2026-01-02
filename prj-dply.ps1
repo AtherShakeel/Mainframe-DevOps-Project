@@ -47,7 +47,7 @@ git push origin main
 
 # --- 4. MAINFRAME UPLOAD ---
 Write-Log "[3/6] Uploading files to $USER_ID libraries..." "Yellow"
-zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user ${env:ZOWE_USER_I}D --pass ${env:ZOWE_PASSWORD}
+zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user ${env:ZOWE_USER_ID} --pass ${env:ZOWE_PASSWORD}
 if ($LASTEXITCODE -eq 0) {
    Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
 }
