@@ -74,7 +74,7 @@ else {
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
-$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD | ConvertFrom-Json
+$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
 
 if ($compJob.data.retcode -eq " CC 0000") {
    Write-Log "SUCCESS: Compilation Clean." "Green"
