@@ -5,10 +5,10 @@ $localRun = "JCL\RUNJCL.jcl"
 
 
 # --- 1. SECURITY & CONFIG ---
-$myUSER_ID_ID = $env:ZOWE_USER
+$myUSER_ID = $env:ZOWE_USER
 $myPASSWORD = $env:ZOWE_PASSWORD
 
-if (-not $myUSER_ID_ID -or -not $myPASSWORD) {
+if (-not $myUSER_ID -or -not $myPASSWORD) {
    Write-Error "CRITICAL: ZOWE_USER or ZOWE_PASSWORD not found in Environment Variables!"
    exit
 }
