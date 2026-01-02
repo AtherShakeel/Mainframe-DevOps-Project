@@ -78,7 +78,7 @@ $runOutput = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --us
 $runRC = $runOutput.data.retcode
 Write-Log "Run Job Return Code: $runRC" "Cyan"
 
-$testResults = zowe jobs view all-job-spool-content $($runOutput.data.jobid) --user $myUSER_ID --pass $myPASSWORD
+$testResults = zowe jobs view all-spool-content $($runOutput.data.jobid) --user $myUSER_ID --pass $myPASSWORD
 
 Write-Host "--- ACTUAL PROGRAM OUTPUT START ---" -ForegroundColor Gray
 Write-Host $testResults
