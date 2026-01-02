@@ -51,7 +51,6 @@ zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $myU
 zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user $myUSER_ID --pass $myPASSWORD
 zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myUSER_ID --pass $myPASSWORD
 
-
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
 $rawOutput = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output  --user $myUSER_ID --pass $myPASSWORD --rfj
@@ -81,6 +80,7 @@ if ($runJob -match $expected) {
    Write-Log "TEST PASSED: Output matches expectation." "Green"
 }
 else {
+   Write-Host "Mainframe Logic Output: $testResult" -ForegroundColor Gray
    Write-Log "TEST FAILED: Logic error detected." "Red"; exit
 }
 
