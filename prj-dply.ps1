@@ -47,20 +47,20 @@ git push origin main
 
 # --- 4. MAINFRAME UPLOAD ---
 Write-Log "[3/6] Uploading files to $USER_ID libraries..." "Yellow"
-zowe files upload file-to-pds $localCobol  "$CBL_PDS(CALCDVOP)" --user $USER_ID --pass $PASSWORD
-zowe files upload file-to-pds $localComp   "$JCL_PDS(COMPJCL)"  --user $USER_ID --pass $PASSWORD
-zowe files upload file-to-pds $localRun    "$JCL_PDS(RUNJCL)"   --user $USER_ID --pass $PASSWORD
+zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
+zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
+zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
-$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $USER_ID --pass $PASSWORD
+$compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
 
 if ($compJob -match "retcode: CC 0000") {
    Write-Log "SUCCESS: Compilation Clean." "Green"
 
    # --- 6. AUTO-TEST ---
    Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
-   $runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $USER_ID --pass $PASSWORD
+   $runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
 
    $expected = "VibeGarden Result: 150"
    if ($runJob -match $expected) {
