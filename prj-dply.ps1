@@ -5,13 +5,13 @@ $localRun = "JCL\RUNJCL.jcl"
 
 
 # --- 1. SECURITY & CONFIG ---
-$USER_ID = $env:ZOWE_USER
-$PASSWORD = $env:ZOWE_PASSWORD
+#$USER_ID = $env:ZOWE_USER
+#$PASSWORD = $env:ZOWE_PASSWORD
 
-if (-not $USER_ID -or -not $PASSWORD) {
-   Write-Error "CRITICAL: ZOWE_USER or ZOWE_PASSWORD not found in Environment Variables!"
-   exit
-}
+#if (-not $USER_ID -or -not $PASSWORD) {
+#   Write-Error "CRITICAL: ZOWE_USER or ZOWE_PASSWORD not found in Environment Variables!"
+#   exit
+#}
 
 $CBL_PDS = "$USER_ID.ZMYPRSNL.COBOL"
 $JCL_PDS = "$USER_ID.ZMYPRSNL.JCL"
@@ -47,7 +47,7 @@ git push origin main
 
 # --- 4. MAINFRAME UPLOAD ---
 Write-Log "[3/6] Uploading files to $USER_ID libraries..." "Yellow"
-zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $env:USER_ID --pass $env:PASSWORD
+zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $env:ZOWE_USER_ID --pass $env:ZOWE_PASSWORD
 if ($LASTEXITCODE -eq 0) {
    Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
 }
