@@ -1,7 +1,7 @@
 //VIBEJOB  JOB  (VIBEGARDEN),'COMPILE',CLASS=A,MSGCLASS=X
 //* Define valiables here
-// SET SRCLIB='Z88264.COBOL'
-// SET LOADLIB='Z88264.LOAD'
+// SET SRCLIB='Z88264.ZMYPRSNL.COBOL'
+// SET LOADLIB='Z88264.ZMYPRSNL.LOAD'
 // SET PGMNAME='CALCDVOP'
 //**************************************************************
 //* STEP 1: COMPILE, LINK, AND GO (IGYWCLG)
