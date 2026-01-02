@@ -1,4 +1,4 @@
-//VIBERUN  JOB (VIBEGARDEN),'RUN',CLASS=A,MSGCLASS=X
+//RUNJCL  JOB (VIBEGARDEN),'RUN',CLASS=A,MSGCLASS=X
 // SET LOADLIB='Z88264.ZMYPRSNL.LOAD'
 // SET PGMNAME='CALCDVOP'
 //*---------------------------------------------------------
