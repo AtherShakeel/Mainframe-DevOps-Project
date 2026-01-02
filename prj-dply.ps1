@@ -13,8 +13,8 @@ if (-not $myUSER_ID -or -not $myPASSWORD) {
    exit
 }
 
-$CBL_PDS = "$USER_ID.ZMYPRSNL.COBOL"
-$JCL_PDS = "$USER_ID.ZMYPRSNL.JCL"
+$CBL_PDS = "$myUSER_ID.ZMYPRSNL.COBOL"
+$JCL_PDS = "$myUSER_ID.ZMYPRSNL.JCL"
 $LOG_DIR = ".\logs"
 
 # Ensure log directory exists
