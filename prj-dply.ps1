@@ -73,10 +73,20 @@ else {
 
 # --- 6. AUTO-TEST ---
 Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
-$runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
+#$runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
+$runOutput = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
+$runRC = $runOutput.data.retcode
+Write-Log "Run Job Return Code: $runRC" "Cyan"
+
+$testResults = zowe jobs view all-job-spool-content $($runOutput.data.jobid) --user $myUSER_ID --pass $myPASSWORD
+
+Write-Host "--- ACTUAL PROGRAM OUTPUT START ---" -ForegroundColor Gray
+Write-Host $testResults
+Write-Host "--- ACTUAL PROGRAM OUTPUT END ---" -ForegroundColor Gray
 
 $expected = "VibeGarden Result: 150"
-if ($runJob -match $expected) {
+#if ($runJob -match $expected) {
+if ($testResults -match $expected) {
    Write-Log "TEST PASSED: Output matches expectation." "Green"
 }
 else {
