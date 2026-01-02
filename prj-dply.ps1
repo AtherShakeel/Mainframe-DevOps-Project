@@ -75,18 +75,21 @@ else {
 Write-Log "[5/6] Running Automated Unit Test..." "Yellow"
 #$runJob = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD
 $runOutput = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
-$runRC = $runOutput.data.retcode
-Write-Log "Run Job Return Code: $runRC" "Cyan"
+$jobId = $rawOutput.data.jobid
 
-$testResults = zowe jobs view all-spool-content $($runOutput.data.jobid) --user $myUSER_ID --pass $myPASSWORD
+$spoolFiles = zowe jobs list spool-files-by-jobid $jobId --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
+$sysoutId = ($spoolFiles.data | Where-Object { $_.ddname -eq "SYSOUT" }).id
+Write-Log "Detected SYSOUT at Spool ID: $sysoutId" "Cyan"
+
+$testResults = zowe jobs view spool-file-by-id $jobId $sysoutId --user $myUSER_ID --pass $myPASSWORD
 
 Write-Host "--- ACTUAL PROGRAM OUTPUT START ---" -ForegroundColor Gray
 Write-Host $testResults
 Write-Host "--- ACTUAL PROGRAM OUTPUT END ---" -ForegroundColor Gray
 
-$expected = "VibeGarden Result: 150"
+#$expected = "VibeGarden Result: 150"
 #if ($runJob -match $expected) {
-if ($testResults -match $expected) {
+if ($testResults -match "VibeGarden Result:\s+150") {
    Write-Log "TEST PASSED: Output matches expectation." "Green"
 }
 else {
