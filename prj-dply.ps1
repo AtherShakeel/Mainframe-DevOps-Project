@@ -48,34 +48,14 @@ git push origin main
 # --- 4. MAINFRAME UPLOAD ---
 Write-Log "[3/6] Uploading files to $USER_ID libraries..." "Yellow"
 zowe files upload file-to-data-set $localCobol  "$CBL_PDS(CALCDVOP)" --user $myUSER_ID --pass $myPASSWORD
-if ($LASTEXITCODE -eq 0) {
-   Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
-}
-else {
-   Write-Host "❌ ERROR: Upload failed. Check your credentials and paths." -ForegroundColor Red
-   exit $LASTEXITCODE
-}
 zowe files upload file-to-data-set $localComp   "$JCL_PDS(COMPJCL)"  --user $myUSER_ID --pass $myPASSWORD
-if ($LASTEXITCODE -eq 0) {
-   Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
-}
-else {
-   Write-Host "❌ ERROR: COMPJCL Upload failed. Check your credentials and paths." -ForegroundColor Red
-   exit $LASTEXITCODE
-}
 zowe files upload file-to-data-set $localRun    "$JCL_PDS(RUNJCL)"   --user $myUSER_ID --pass $myPASSWORD
-if ($LASTEXITCODE -eq 0) {
-   Write-Host "✅ SUCCESS: COBOL uploaded to PDS." -ForegroundColor Green
-}
-else {
-   Write-Host "❌ ERROR: RUNJCL Upload failed. Check your credentials and paths." -ForegroundColor Red
-   exit $LASTEXITCODE
-}
+
 
 # --- 5. COMPILE ---
 Write-Log "[4/6] Submitting Compile Job..." "Yellow"
 $compJob = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --view-all-spool-content --user $myUSER_ID --pass $myPASSWORD --rfj | ConvertFrom-Json
-
+Write-Log $compJob.data.retcode  "Red"
 if ($compJob.data.retcode -eq " CC 0000") {
    Write-Log "SUCCESS: Compilation Clean." "Green"
 
