@@ -10,6 +10,9 @@
        01 WS-INPUT-DATA.
           05 WS-BASE-SCORE      PIC 9(3)V99 VALUE ZERO.
       
+      01  WS-VERSION-INFO.
+          05  FILLER           PIC X(10) VALUE "VERSION: ".
+          05  WS-BUILD-ID      PIC X(10) VALUE "BUILD-TAG ".
        01 WS-CALC-RESULTS.
           05 WS-BONUS-MULTIPLIER PIC 9V9  VALUE 2.5.
           05 WS-TOTAL-RESULT     PIC 9(7)V99 VALUE ZERO.
@@ -26,5 +29,6 @@
       * 3. Format and Display for the PowerShell Script to see
            MOVE WS-TOTAL-RESULT TO WS-DISPLAY-FINAL.
            DISPLAY "VibeGarden Result: " WS-DISPLAY-FINAL.
+           DISPLAY WS-VERSION-INFO.
 
            GOBACK.

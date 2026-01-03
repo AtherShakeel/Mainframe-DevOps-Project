@@ -77,7 +77,20 @@ git add .
 git commit -m "VibeGarden Build Started: $(Get-Date -Format 'HH:mm')" --allow-empty
 
 #==============================================================================
-# 5. MAINFRAME UPLOAD
+# 5. VERSIONING LOGIC
+#==============================================================================
+$version = Get-Date -Format "yyyyMMdd"
+$buildId = "B" + (Get-Date -Format "HHmm") # Example: B1430
+$newTag = "$version-$buildId"
+
+Write-Log "🏷️ Updating COBOL Version Tag to: $newTag" "Cyan"
+
+# Read the file, replace the placeholder, and save it back
+(Get-Content "COBOL\CALCDVOP.cbl") -replace "BUILD-TAG", $newTag |
+Set-Content "COBOL\CALCDVOP.cbl"
+
+#==============================================================================
+# 6. MAINFRAME UPLOAD
 #==============================================================================
 Write-Log "[2/7] Uploading Source to $myUSER_ID..." "Yellow"
 zowe files upload file-to-data-set "COBOL\CALCDVOP.cbl" "$COBOL_PDS(CALCDVOP)" --user $myUSER_ID --pass $myPASSWORD
@@ -85,7 +98,7 @@ zowe files upload file-to-data-set "JCL\COMPJCL.jcl"    "$JCL_PDS(COMPJCL)"    -
 zowe files upload file-to-data-set "JCL\RUNJCL.jcl"     "$JCL_PDS(RUNJCL)"     --user $myUSER_ID --pass $myPASSWORD
 
 #==============================================================================
-# 6. COMPILE SECTION
+#7. COMPILE SECTION
 #==============================================================================
 Write-Log "[3/7] Compiling COBOL..." "Yellow"
 $compRaw = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
@@ -98,7 +111,7 @@ if ($compJob.data.retcode -ne "CC 0000") {
 Write-Log "✅ COMPILE SUCCESS" "Green"
 
 #==============================================================================
-# 7. EXECUTION SECTION
+# 8. EXECUTION SECTION
 #==============================================================================
 Write-Log "[4/7] Running Automated Test (RUNJCL)..." "Yellow"
 $runRaw = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
@@ -113,7 +126,7 @@ if (-not $sysoutId) { $sysoutId = $spoolFiles.data[-1].id } # Fallback to last f
 $testResults = zowe jobs view spool-file-by-id $jobId $sysoutId --user $myUSER_ID --pass $myPASSWORD
 
 #==============================================================================
-# 8. VALIDATION & GITHUB PUSH
+# 9. VALIDATION & GITHUB PUSH
 #==============================================================================
 Write-Log "[5/7] Validating Result Logic..." "Yellow"
 Write-Host "--- PROGRAM OUTPUT ---" -ForegroundColor Gray
@@ -138,7 +151,7 @@ else {
 }
 
 #==============================================================================
-# 9. Calculate elapsed time and write the final completion message to the log
+# 10. Calculate elapsed time and write the final completion message to the log
 #==============================================================================
 $totalEndTime = Get-Date
 $duration = $totalEndTime - $totalStartTime
