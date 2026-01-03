@@ -86,7 +86,7 @@ $version = Get-Date -Format "yyyyMMdd"
 $buildId = "B" + (Get-Date -Format "HHmm") # Example: B1430
 $newTag = "$version-$buildId"
 
-Write-Log "🏷️ Updating COBOL Version Tag to: $newTag" "Cyan"
+Write-Log " Updating COBOL Version Tag to: $newTag" "Cyan"
 
 # Read the file, replace the placeholder, and save it back
 (Get-Content "COBOL\CALCDVOP.cbl") -replace "BUILD-TAG", $newTag |
