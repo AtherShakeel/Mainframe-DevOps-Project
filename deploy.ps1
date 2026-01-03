@@ -103,9 +103,14 @@ zowe files upload file-to-data-set "JCL\RUNJCL.jcl"     "$JCL_PDS(RUNJCL)"     -
 Write-Log "[3/7] Compiling COBOL..." "Yellow"
 $compRaw = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
 $compJob = $compRaw | ConvertFrom-Json
+$rc = $compJob.data.retcode
 
-if ($compJob.data.retcode -ne "CC 0000") {
-    Write-Log "❌ COMPILE FAILED: $($compJob.data.retcode). Check spool for errors." "Red"
+if ($rc -ne "CC 0000") {
+    Write-Host "`n****************************************" -ForegroundColor Red
+    Write-Host "❌ COMPILE FAILED: $rc" -ForegroundColor Red
+    Write-Host "Check spool for errors in CALCDVOP." -ForegroundColor Red
+    Write-Host "****************************************`n" -ForegroundColor Red
+    Write-Log "❌ COMPILE FAILED: $($rc). Check spool for errors." "Red"
     exit 1 # Script stops here; nothing is pushed to GitHub.
 }
 Write-Log "✅ COMPILE SUCCESS" "Green"
@@ -159,4 +164,4 @@ $timeString = "{0:mm} min {0:ss} sec" -f $duration
 
 Write-Log "[7/7] VibeGarden Pipeline Finished Successfully in $timeString!" "Magenta"
 
-#===========================================================================================================================================
+#===========================================================================================================================================s
