@@ -37,11 +37,11 @@ foreach ($folder in $requiredFolders) {
 
 # E. Final Decision: Stop if any check failed
 if (-not $dependenciesPassed) {
-    Write-Host "`n⚠️ VibeGarden Pipeline cannot start until dependencies are fixed.`n" -ForegroundColor Yellow
+    Write-Host "`n VibeGarden Pipeline cannot start until dependencies are fixed.`n" -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "✅ All dependencies verified. Starting VibeGarden Master Pipeline..." -ForegroundColor Cyan
+Write-Host " All dependencies verified. Starting VibeGarden Master Pipeline..." -ForegroundColor Cyan
 
 # ==============================================================================
 # 2. CONFIGURATION ---
@@ -59,7 +59,6 @@ $logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
 # B. Write logs into the new log file
 function Write-Log($msg, $color) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Host "`n****************************************" -ForegroundColor Red
     Write-Host "`n$msg" -ForegroundColor $color
     Write-Host "`n****************************************" -ForegroundColor Red
 
@@ -114,10 +113,11 @@ if ([string]::IsNullOrWhiteSpace($rc)) {
 }
 
 if ($rc -ne "CC 0000" -and $rc -ne "CC 0004") {
+    Write-Host "`n****************************************" -ForegroundColor Red
     Write-Log "[ERROR] COMPILE FAILED: $($rc). Check spool for errors." "Red"
     exit 1 # Script stops here; nothing is pushed to GitHub.
 }
-Write-Log "✅ COMPILE SUCCESS" "Green"
+Write-Log " COMPILE SUCCESS" "Green"
 
 #==============================================================================
 # 8. EXECUTION SECTION
@@ -145,13 +145,13 @@ Write-Host "----------------------" -ForegroundColor Gray
 # A. Regex captures the decimal/number even with commas
 if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
     $foundValue = $Matches['val'].Trim()
-    Write-Log "✅ TEST PASSED: Captured Result: $foundValue" "Green"
+    Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
 
     # SUCCESS GATE: Only push to GitHub if we reached this line
     Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
     git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
     git push
-    Write-Log "✅ GITHUB SYNCED" "Cyan"
+    Write-Log " GITHUB SYNCED" "Cyan"
 }
 else {
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
