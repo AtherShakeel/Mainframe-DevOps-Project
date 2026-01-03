@@ -11,8 +11,8 @@
           05 WS-BASE-SCORE      PIC 9(3)V99 VALUE ZERO.
       
        01  WS-VERSION-INFO.
-           05  FILLER           PIC X(14) VALUE "VERSION: ".
-           05  WS-BUILD-ID      PIC X(14) VALUE "20260103-B1807 ".
+           05  FILLER           PIC X(15) VALUE "VERSION: ".
+           05  WS-BUILD-ID      PIC X(15) VALUE "20260103-B1807 ".
        01 WS-CALC-RESULTS.
           05 WS-BONUS-MULTIPLIER PIC 9V9  VALUE 2.5.
           05 WS-TOTAL-RESULT     PIC 9(7)V99 VALUE ZERO.
