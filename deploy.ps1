@@ -113,7 +113,6 @@ if ([string]::IsNullOrWhiteSpace($rc)) {
 }
 
 if ($rc -ne "CC 0000" -and $rc -ne "CC 0004") {
-    Write-Host "`n****************************************" -ForegroundColor Red
     Write-Log "[ERROR] COMPILE FAILED: $($rc). Check spool for errors." "Red"
     exit 1 # Script stops here; nothing is pushed to GitHub.
 }
