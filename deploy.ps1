@@ -9,19 +9,19 @@ $dependenciesPassed = $true
 
 # A. Check for Git
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Git is NOT installed. Please install Git for Windows." -ForegroundColor Red
+    Write-Host "[ERROR] Git is NOT installed. Please install Git for Windows." -ForegroundColor Red
     $dependenciesPassed = $false
 }
 
 # B. Check for Zowe CLI
 if (-not (Get-Command zowe -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Zowe CLI is NOT installed. Please install it via Node.js (npm install -g @zowe/cli)." -ForegroundColor Red
+    Write-Host "[ERROR] Zowe CLI is NOT installed. Please install it via Node.js (npm install -g @zowe/cli)." -ForegroundColor Red
     $dependenciesPassed = $false
 }
 
 # C. Check for Environment Variables (The Credentials)
 if ([string]::IsNullOrWhiteSpace($env:ZOWE_USER) -or [string]::IsNullOrWhiteSpace($env:ZOWE_PASSWORD)) {
-    Write-Host "❌ Missing Credentials: ZOWE_USER and ZOWE_PASSWORD environment variables must be set." -ForegroundColor Red
+    Write-Host "[ERROR] Missing Credentials: ZOWE_USER and ZOWE_PASSWORD environment variables must be set." -ForegroundColor Red
     Write-Host "   Try: $env:ZOWE_USER='your_id'; $env:ZOWE_PASSWORD='your_password'" -ForegroundColor Gray
     $dependenciesPassed = $false
 }
@@ -30,7 +30,7 @@ if ([string]::IsNullOrWhiteSpace($env:ZOWE_USER) -or [string]::IsNullOrWhiteSpac
 $requiredFolders = @("COBOL", "JCL")
 foreach ($folder in $requiredFolders) {
     if (-not (Test-Path $folder)) {
-        Write-Host "❌ Missing Folder: Could not find the '$folder' directory in the current path." -ForegroundColor Red
+        Write-Host "[ERROR] Missing Folder: Could not find the '$folder' directory in the current path." -ForegroundColor Red
         $dependenciesPassed = $false
     }
 }
@@ -107,10 +107,10 @@ $rc = $compJob.data.retcode
 
 if ($rc -ne "CC 0000") {
     Write-Host "`n****************************************" -ForegroundColor Red
-    Write-Host "❌ COMPILE FAILED: $rc" -ForegroundColor Red
+    Write-Host "[ERROR] COMPILE FAILED: $rc" -ForegroundColor Red
     Write-Host "Check spool for errors in CALCDVOP." -ForegroundColor Red
     Write-Host "****************************************`n" -ForegroundColor Red
-    Write-Log "❌ COMPILE FAILED: $($rc). Check spool for errors." "Red"
+    Write-Log "[ERROR] COMPILE FAILED: $($rc). Check spool for errors." "Red"
     exit 1 # Script stops here; nothing is pushed to GitHub.
 }
 Write-Log "✅ COMPILE SUCCESS" "Green"
@@ -150,7 +150,7 @@ if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
     Write-Log "✅ GITHUB SYNCED" "Cyan"
 }
 else {
-    Write-Log "❌ TEST FAILED: Result mismatch." "Red"
+    Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
     Write-Log "⚠️ WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
 }
