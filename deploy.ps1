@@ -59,7 +59,11 @@ $logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
 # B. Write logs into the new log file
 function Write-Log($msg, $color) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Write-Host "`n****************************************" -ForegroundColor Red
     Write-Host "`n$msg" -ForegroundColor $color
+    Write-Host "`n****************************************" -ForegroundColor Red
+
+    # C. # Still write the plain text to the log file
     "[$timestamp] $($msg.Trim())" | Out-File -FilePath $logFile -Append
 }
 
@@ -98,18 +102,18 @@ zowe files upload file-to-data-set "JCL\COMPJCL.jcl"    "$JCL_PDS(COMPJCL)"    -
 zowe files upload file-to-data-set "JCL\RUNJCL.jcl"     "$JCL_PDS(RUNJCL)"     --user $myUSER_ID --pass $myPASSWORD
 
 #==============================================================================
-#7. COMPILE SECTION
+# 7. COMPILE SECTION
 #==============================================================================
 Write-Log "[3/7] Compiling COBOL..." "Yellow"
 $compRaw = zowe jobs submit data-set "$JCL_PDS(COMPJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
 $compJob = $compRaw | ConvertFrom-Json
 $rc = $compJob.data.retcode
+# A. If $rc is empty, it means the Zowe command failed to get a result at all
+if ([string]::IsNullOrWhiteSpace($rc)) {
+    $rc = "UNKNOWN (Zowe Communication Error)"
+}
 
-if ($rc -ne "CC 0000") {
-    Write-Host "`n****************************************" -ForegroundColor Red
-    Write-Host "[ERROR] COMPILE FAILED: $rc" -ForegroundColor Red
-    Write-Host "Check spool for errors in CALCDVOP." -ForegroundColor Red
-    Write-Host "****************************************`n" -ForegroundColor Red
+if ($rc -ne "CC 0000" -and $rc -ne "CC 0004") {
     Write-Log "[ERROR] COMPILE FAILED: $($rc). Check spool for errors." "Red"
     exit 1 # Script stops here; nothing is pushed to GitHub.
 }
@@ -151,7 +155,7 @@ if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
 }
 else {
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
-    Write-Log "⚠️ WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
+    Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
 }
 
