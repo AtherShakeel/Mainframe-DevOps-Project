@@ -10,9 +10,9 @@
        01 WS-INPUT-DATA.
           05 WS-BASE-SCORE      PIC 9(3)V99 VALUE ZERO.
       
-      01  WS-VERSION-INFO.
-          05  FILLER           PIC X(15) VALUE "VERSION: ".
-          05  WS-BUILD-ID      PIC X(15) VALUE "20260103-B1807 ".
+       01  WS-VERSION-INFO.
+           05  FILLER           PIC X(10) VALUE "VERSION: ".
+           05  WS-BUILD-ID      PIC X(10) VALUE "20260103-B1807 ".
        01 WS-CALC-RESULTS.
           05 WS-BONUS-MULTIPLIER PIC 9V9  VALUE 2.5.
           05 WS-TOTAL-RESULT     PIC 9(7)V99 VALUE ZERO.
@@ -23,7 +23,7 @@
       * 1. Accept the value from //SYSIN in your RUNJCL
            ACCEPT WS-BASE-SCORE.
 
-      * 2. Perform the VibeGarden Logic (1.5x Multiplier)
+      * 2. Perform the VibeGarden Logic (2.5x Multiplier)
            COMPUTE WS-TOTAL-RESULT = WS-BASE-SCORE * WS-BONUS-MULTIPLIER.
 
       * 3. Format and Display for the PowerShell Script to see
