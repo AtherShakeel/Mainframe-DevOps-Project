@@ -60,7 +60,7 @@ $logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
 function Write-Log($msg, $color) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     Write-Host "`n$msg" -ForegroundColor $color
-    Write-Host "`n****************************************" -ForegroundColor Red
+    Write-Host "`n****************************************"
 
     # C. # Still write the plain text to the log file
     "[$timestamp] $($msg.Trim())" | Out-File -FilePath $logFile -Append
