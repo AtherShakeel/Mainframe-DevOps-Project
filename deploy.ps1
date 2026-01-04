@@ -143,7 +143,7 @@ $testResults.Trim()
 Write-Host "----------------------" -ForegroundColor Gray
 
 # A. Regex captures the decimal/number even with commas
-if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
+if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
     $foundValue = $Matches['val'].Trim()
     Write-Host "foundvalue is" $foundValue
     Write-Log " TESTS PASSED: Captured Result: $foundValue" "Green"
