@@ -158,8 +158,8 @@ if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
         Write-Log " GITHUB SYNCED" "Cyan"
     }
     else {
-        Write-Host "foundvaue is $foundValue"
-        Write-Host "Raw data: $testResults" -ForegroundColor Gray
+        Write-Host "inside null -ne foundvalue check is $foundValue"
+        Write-Host "Raw data inside null -ne foundvalue check: $testResults" -ForegroundColor Gray
         Write-Log "[ERROR] Label found but regex could not capture the numeric value." "Red"
         exit 1
     }
