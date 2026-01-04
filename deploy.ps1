@@ -147,7 +147,8 @@ Write-Host "----------------------" -ForegroundColor Gray
 if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
     $foundValue = $Matches['val']
 
-    if ($Matches.ContainsKey('val')) {
+    #if ($Matches.ContainsKey('val')) {
+    if ($null -ne $foundValue) {
         $foundValue = $Matches['val'].Trim()
         Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
         # SUCCESS GATE: Only push to GitHub if we reached this line
