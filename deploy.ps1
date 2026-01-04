@@ -158,13 +158,15 @@ if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
         Write-Log " GITHUB SYNCED" "Cyan"
     }
     else {
-        Write-Host "foundvaue is $foundValue" 
+        Write-Host "foundvaue is $foundValue"
         Write-Host "Raw data: $testResults" -ForegroundColor Gray
         Write-Log "[ERROR] Label found but regex could not capture the numeric value." "Red"
         exit 1
     }
 }
 else {
+    Write-Host "Raw data: $testResults" -ForegroundColor Gray
+    Write-Host "foundvaue is $foundValue"
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
     Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
