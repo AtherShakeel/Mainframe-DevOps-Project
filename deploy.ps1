@@ -144,7 +144,7 @@ Write-Host "----------------------" -ForegroundColor Gray
 
 $foundValue = ""
 # A. Regex captures the decimal/number even with commas
-if ($testResults -match "(?m)^VibeGarden Result:\s+(?<val>[\d,.]+)") {
+if ($testResults -match "(?m)^VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
     $foundValue = $Matches['val'].Trim()
     Write-Host "foundvalue is" $foundValue
     Write-Log " TESTS PASSED: Captured Result: $foundValue" "Green"
@@ -156,9 +156,6 @@ if ($testResults -match "(?m)^VibeGarden Result:\s+(?<val>[\d,.]+)") {
     Write-Log " GITHUB SYNCED" "Cyan"
 }
 else {
-    Write-Host "this is ur test result $testResults"
-    $foundValue = $Matches['val'].Trim()
-    Write-Host "foundvalue is" $foundValue
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
     Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
