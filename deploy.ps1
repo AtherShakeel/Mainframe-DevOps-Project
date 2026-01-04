@@ -157,7 +157,7 @@ if ($testResults -match "(?m)^VibeGarden Result:\s+(?<val>[\d,.]+)") {
     Write-Log " GITHUB SYNCED" "Cyan"
 }
 else {
-    Write-Host $testResults
+    Write-Host "this is ur test result $testResults"
     $foundValue = $Matches['val'].Trim()
     Write-Host "foundvalue is" $foundValue
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
