@@ -144,20 +144,26 @@ Write-Host "----------------------" -ForegroundColor Gray
 
 # A. Regex captures the decimal/number even with commas
 #if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
-if ($testResults -match "VibeGarden Result:.*?(?<val>[\d,.]+)") {
-    $foundValue = $Matches['val'].Trim()
-    Write-Log " TESTS PASSED: Captured Result: $foundValue" "Green"
-    # SUCCESS GATE: Only push to GitHub if we reached this line
-    Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
-    git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
-    git push
-    Write-Log " GITHUB SYNCED" "Cyan"
+if ($testResults -match "VibeGarden Result:[^\d]*(?<val>[\d,.]+)") {
+    #$foundValue = $Matches['val'].Trim()
+    $foundValue = $Matches['val']
+    if ($null -ne $foundValue) {
+        $foundValue = $foundValue.Trim()
+        Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
+        # SUCCESS GATE: Only push to GitHub if we reached this line
+        Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
+        git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
+        git push
+        Write-Log " GITHUB SYNCED" "Cyan"
+    }
+    else {
+        Write-Log "[ERROR] Label found but numeric value was null." "Red"
+        exit 1
+    }
 }
 else {
-    Write-Host "--- DEBUG: MATCH FAILED ---" -ForegroundColor Red
-    Write-Host "Raw Output: $testResults"
-    #    Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
-    #    Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
+    Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
+    Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
 }
 
