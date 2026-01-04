@@ -160,10 +160,9 @@ $foundValue = ([regex]::Match($testResults, $regexPattern)).Groups['val'].Value
 # B. Validation Gate: This check will now work because $foundValue is never a null array
 if (-not [string]::IsNullOrWhiteSpace($foundValue)) {
     $foundValue = $foundValue.Trim()
-    Write-Host "found value is $foundValue" -ForegroundColor Gray
     Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
 
-    # SUCCESS GATE: Only push to GitHub if we reached this line
+    # GITHUB SYNC
     Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
     git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
     git push
