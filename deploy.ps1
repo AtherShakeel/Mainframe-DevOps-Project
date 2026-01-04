@@ -181,6 +181,6 @@ $totalEndTime = Get-Date
 $duration = $totalEndTime - $totalStartTime
 $timeString = "{0:mm} min {0:ss} sec" -f $duration
 
-Write-Log "[7/7] VibeGarden Pipeline Finished Successfully in $timeString!" "Magenta"
+Write-Log "[7/7] VibeGarden Pipeline Finished Successfully in $timeString!" "Yellow"
 
 #===========================================================================================================================================s
