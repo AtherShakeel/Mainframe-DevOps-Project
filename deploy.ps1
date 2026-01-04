@@ -121,7 +121,7 @@ Write-Log " COMPILE SUCCESS" "Green"
 #==============================================================================
 # 8. EXECUTION SECTION
 #==============================================================================
-Write-Log "[4/7] Running Automated Test (RUNJCL)..." "Yellow"
+Write-Log "[4/7] Running Automated ather (RUNJCL)..." "Yellow"
 $runRaw = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
 $runJob = $runRaw | ConvertFrom-Json
 $jobId = $runJob.data.jobid
