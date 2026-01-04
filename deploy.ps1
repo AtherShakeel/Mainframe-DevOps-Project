@@ -157,6 +157,9 @@ if ($testResults -match "(?m)^VibeGarden Result:\s+(?<val>[\d,.]+)") {
     Write-Log " GITHUB SYNCED" "Cyan"
 }
 else {
+    Write-Host $testResults
+    $foundValue = $Matches['val'].Trim()
+    Write-Host "foundvalue is" $foundValue
     Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
     Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
     exit 1
