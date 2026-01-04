@@ -54,7 +54,8 @@ def run_deploy():
     cp_res = subprocess.run(compile_cmd, shell=True, capture_output=True, text=True)
 
     if cp_res.returncode != 0:
-        write_log("Zowe command failed to execute.", "ERROR", cp_res.returncode)
+        print(cp_res.returncode)
+        write_log("Zowe command failed to execute.", "ERROR")
         sys.exit(1)
 
     job_data = json.loads(cp_res.stdout)
