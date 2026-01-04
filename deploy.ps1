@@ -137,12 +137,15 @@ $testResults = zowe jobs view spool-file-by-id $jobId $sysoutId --user $myUSER_I
 # 9. VALIDATION & GITHUB PUSH
 #==============================================================================
 Write-Log "[5/7] Validating Result Logic..." "Yellow"
+# A. Store the program output in a variable so it doesn't change
+$outputLines = $testResults.Trim()
+
 Write-Host "--- PROGRAM OUTPUT ---" -ForegroundColor Gray
-$testResults.Trim()
+$outputLines
 Write-Host "----------------------" -ForegroundColor Gray
 
 # A. Regex captures the decimal/number even with commas
-if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
+if ($outputLines -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
     $foundValue = $Matches['val'].Trim()
     Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
 
