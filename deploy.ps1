@@ -74,7 +74,7 @@ function Write-Log($msg, $color) {
         Default { "  $msg" }
     }
 
-    "[$timestamp] $mdLine  " | Out-File -FilePath $logFile -Append
+    "$mdLine [$timestamp] " | Out-File -FilePath $logFile -Append
 }
 
 #==============================================================================
