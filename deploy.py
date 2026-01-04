@@ -1,102 +1,166 @@
 import subprocess
-import json
-import re
-import datetime
 import os
 import sys
+import datetime
+import json
+import re
+import time
 
-# --- 1. ENVIRONMENT & SECURITY (Matches $env:ZOWE_USER) ---
-# ECID teams expect scripts to fail fast if security is missing.
-ZOWE_USER = os.environ.get("ZOWE_USER")
-ZOWE_PASS = os.environ.get("ZOWE_PASSWORD")
+# ==============================================================================
+# 1. PRE-FLIGHT DEPENDENCY CHECK
+# ==============================================================================
+dependencies_passed = True
 
-# --- 2. LOGGING CONFIGURATION (Matches Write-Log logic) ---
-LOG_DIR = r"C:\Users\ather\Mainframe_DevOps\logs"
-TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-LOG_FILE = os.path.join(LOG_DIR, f"deploy-{TIMESTAMP}.md")
+def check_cmd(cmd, name):
+    global dependencies_passed
+    check = subprocess.run(f"where {cmd}", shell=True, capture_output=True)
+    if check.returncode != 0:
+        print(f"\033[91m[ERROR] {name} is NOT installed.\033[0m")
+        dependencies_passed = False
 
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
+# A & B: Check Git and Zowe
+check_cmd("git", "Git")
+check_cmd("zowe", "Zowe CLI")
 
-def write_log(msg, status="INFO"):
-    time_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    styles = {"PASS": "## ✅ PASS:", "ERROR": "## ❌ ERROR:", "SYNC": "> **SYNC:**", "INFO": "- **INFO:**"}
-    formatted_msg = f"{styles.get(status, '-')} [{time_str}] {msg}"
-    print(formatted_msg)
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{formatted_msg}  \n")
+# C. Check Credentials (Matching your $env names)
+z_user = os.environ.get("ZOWE_USER")
+z_pass = os.environ.get("ZOWE_PASSWORD")
 
-# --- 3. DEPENDENCY & VERSIONING (Matches your Versioning Logic) ---
-def pre_flight_check():
-    write_log(f"Initializing VibeGarden Build Version 1.{TIMESTAMP}", "INFO")
-    if not ZOWE_USER or not ZOWE_PASS:
-        write_log("Security check failed: Credentials not in Environment Variables!", "ERROR")
-        sys.exit(1)
+if not z_user or not z_pass:
+    print("\033[91m[ERROR] Missing Credentials: ZOWE_USER and ZOWE_PASSWORD must be set.\033[0m")
+    dependencies_passed = False
 
-    # Check if Zowe CLI is installed (Matches 'Get-Command zowe' logic)
-    check_zowe = subprocess.run("zowe --version", shell=True, capture_output=True)
-    if check_zowe.returncode != 0:
-        write_log("Dependency Error: Zowe CLI is not installed.", "ERROR")
-        sys.exit(1)
+# D. Check Folders
+for folder in ["COBOL", "JCL"]:
+    if not os.path.exists(folder):
+        print(f"\033[91m[ERROR] Missing Folder: {folder}\033[0m")
+        dependencies_passed = False
 
-# --- 4. EXECUTION LOGIC ---
-def run_deploy():
-    pre_flight_check()
+if not dependencies_passed:
+    sys.exit(1)
 
-    # A. GIT ADD & COMMIT (Matches initial Git logic)
-    write_log("Syncing local code to Git repository...", "SYNC")
-    subprocess.run("git add .", shell=True)
-    subprocess.run(f'git commit -m "VibeGarden Build {TIMESTAMP}"', shell=True)
+print("\033[96m All dependencies verified. Starting VibeGarden Master Pipeline...\033[0m")
 
-    # B. MAINFRAME COMPILE (Matches zowe zos-jobs submit)
-    write_log("Submitting COBOL Compile to Mainframe...", "INFO")
-    #compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL' --wait"
-    compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL'"
-    cp_res = subprocess.run(compile_cmd, shell=True, capture_output=True, text=True)
-    # Add this temporarily to see the real error
-    print("DEBUG STDERR:", cp_res.stderr)
-    print("DEBUG STDOUT:", cp_res.stdout)
+# ==============================================================================
+# 2. CONFIGURATION & LOGGING
+# ==============================================================================
+JCL_PDS = f"{z_user}.ZMYPRSNL.JCL"
+COBOL_PDS = f"{z_user}.ZMYPRSNL.COBOL"
 
-    if cp_res.returncode != 0:
-        write_log("Zowe command failed to execute.", "ERROR")
-        sys.exit(1)
+log_dir = "./logs"
+if not os.path.exists(log_dir): os.makedirs(log_dir)
+log_file = os.path.join(log_dir, f"deploy-{datetime.datetime.now().strftime('%Y%m%d-%H%M')}.md")
 
-    job_data = json.loads(cp_res.stdout)
-    job_id = job_data.get("jobid")
-    retcode = job_data.get("retcode")
+def write_log(msg, color_name):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    if retcode == "CC 0000":
-        write_log(f"COMPILE SUCCESSFUL: {job_id}", "PASS")
-    else:
-        # C. AUTO-SPOOL ON FAILURE (Matches your Error-Handling logic)
-        write_log(f"COMPILE FAILED: {retcode}. Fetching Spool...", "ERROR")
-        spool = subprocess.run(f"zowe zos-jobs view spool-by-id {job_id}", shell=True, capture_output=True, text=True).stdout
-        with open(LOG_FILE, "a") as f:
-            f.write(f"\n### 📋 FAILED SPOOL ({job_id})\n```text\n{spool}\n```\n")
-        sys.exit(1)
+    # Terminal Colors (Matching Write-Host)
+    colors = {"Green": "\033[92m", "Red": "\033[91m", "Cyan": "\033[96m", "Yellow": "\033[93m", "White": "\033[97m"}
+    print(f"{colors.get(color_name, '')}[{timestamp}] {msg}\033[0m")
 
-    # D. TEST & REGEX EXTRACTION (Matches your $regex = '...' logic)
-    write_log("Running Automated Regression Tests...", "INFO")
-    test_cmd = "zowe zos-jobs submit local-file './JCL/RUNTEST.jcl' --wait"
-    test_res = subprocess.run(test_cmd, shell=True, capture_output=True, text=True)
-    test_job_id = json.loads(test_res.stdout).get("jobid")
+    # Markdown Logic (Matching your switch statement)
+    md_map = {"Green": "## PASS:", "Red": "## ERROR:", "Cyan": "> SYNC:", "Yellow": "- INFO:"}
+    md_line = f"{md_map.get(color_name, ' ')} {msg} [{timestamp}]  \n"
+    with open(log_file, "a") as f: f.write(md_line)
 
-    test_spool = subprocess.run(f"zowe zos-jobs view spool-by-id {test_job_id}", shell=True, capture_output=True, text=True).stdout
+# ==============================================================================
+# 3. START STOPWATCH
+# ==============================================================================
+start_time = datetime.datetime.now()
 
-    # Extracting the 1,100.00 value
-    match = re.search(r'VibeGarden Result:\s*([\d,.]+)', test_spool)
+# ==============================================================================
+# 4. PRE-DEPLOYMENT GIT RECORD
+# ==============================================================================
+write_log("[1/7] Recording local changes (Local Commit)...", "Yellow")
+subprocess.run("git add .", shell=True)
+subprocess.run(f"git commit -m \"VibeGarden Build Started: {start_time.strftime('%H:%M')}\" --allow-empty", shell=True)
 
-    if match:
-        found_value = match.group(1)
-        write_log(f"TESTS PASSED: VibeGarden Result = {found_value}", "PASS")
+# ==============================================================================
+# 5. VERSIONING LOGIC (BUILD-TAG Replacement)
+# ==============================================================================
+new_tag = datetime.datetime.now().strftime("%Y%m%d-B%H%M")
+write_log(f"Updating COBOL Version Tag to: {new_tag}", "Cyan")
 
-        # E. FINAL GIT PUSH (Matches final $env:GITHUB_PUSH logic)
-        write_log("Pushing verified changes to GitHub...", "SYNC")
-        subprocess.run(f'git commit --amend -m "VibeGarden Deploy Success: {found_value}"', shell=True)
-        subprocess.run("git push", shell=True)
-    else:
-        write_log("VALIDATION FAILED: No numeric result found in spool.", "ERROR")
-        sys.exit(1)
+cobol_path = "COBOL/CALCDVOP.cbl"
+with open(cobol_path, 'r') as f:
+    content = f.read().replace("BUILD-TAG", new_tag)
+with open(cobol_path, 'w') as f:
+    f.write(content)
 
-if __name__ == "__main__":
-    run_deploy()
+# ==============================================================================
+# 6. MAINFRAME UPLOAD
+# ==============================================================================
+write_log(f"[2/7] Uploading Source to {z_user}...", "Yellow")
+files_to_upload = [
+    (f"COBOL/CALCDVOP.cbl", f"{COBOL_PDS}(CALCDVOP)"),
+    (f"JCL/COMPJCL.jcl", f"{JCL_PDS}(COMPJCL)"),
+    (f"JCL/RUNJCL.jcl", f"{JCL_PDS}(RUNJCL)")
+]
+
+for local, remote in files_to_upload:
+    cmd = f"zowe files upload file-to-data-set \"{local}\" \"{remote}\" --user {z_user} --pass {z_pass}"
+    subprocess.run(cmd, shell=True, capture_output=True)
+
+# ==============================================================================
+# 7. COMPILE SECTION
+# ==============================================================================
+write_log("[3/7] Compiling COBOL...", "Yellow")
+comp_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(COMPJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass}"
+comp_res = subprocess.run(comp_cmd, shell=True, capture_output=True, text=True)
+
+try:
+    comp_data = json.loads(comp_res.stdout)
+    rc = comp_data.get("data", {}).get("retcode", "UNKNOWN")
+except:
+    rc = "UNKNOWN (Zowe Communication Error)"
+
+if rc not in ["CC 0000", "CC 0004"]:
+    write_log(f"[ERROR] COMPILE FAILED: {rc}. Check spool for errors.", "Red")
+    sys.exit(1)
+write_log(" COMPILE SUCCESS", "Green")
+
+# ==============================================================================
+# 8. EXECUTION SECTION
+# ==============================================================================
+write_log("[4/7] Running Automated TESTS (RUNJCL)...", "Yellow")
+run_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(RUNJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass}"
+run_res = subprocess.run(run_cmd, shell=True, capture_output=True, text=True)
+run_data = json.loads(run_res.stdout)
+job_id = run_data.get("data", {}).get("jobid")
+
+# Dynamic Spool Lookup
+spool_cmd = f"zowe jobs list spool-files-by-jobid {job_id} --rfj --user {z_user} --pass {z_pass}"
+spool_list = json.loads(subprocess.run(spool_cmd, shell=True, capture_output=True, text=True).stdout)
+sysout_id = next((f["id"] for f in spool_list.get("data", []) if f["ddname"].strip() == "SYSOUT"), None)
+
+if not sysout_id: sysout_id = spool_list["data"][-1]["id"]
+
+test_results = subprocess.run(f"zowe jobs view spool-file-by-id {job_id} {sysout_id} --user {z_user} --pass {z_pass}", shell=True, capture_output=True, text=True).stdout
+
+# ==============================================================================
+# 9. VALIDATION & GITHUB PUSH
+# ==============================================================================
+write_log("[5/7] Validating Result Logic...", "Yellow")
+print("\033[90m--- PROGRAM OUTPUT ---\n" + test_results.strip() + "\n----------------------\033[0m")
+
+regex_pattern = r"VibeGarden Result:\s*([\d,.]+)"
+match = re.search(regex_pattern, test_results)
+
+if match:
+    found_value = match.group(1).strip()
+    write_log(f"  TESTS PASSED: Captured Result: {found_value}", "Green")
+
+    write_log("[6/7] Success! Pushing 'Blessed' code to GitHub...", "Yellow")
+    subprocess.run(f"git commit --amend -m \"VibeGarden Success: Job {job_id} - Result {found_value}\"", shell=True)
+    subprocess.run("git push", shell=True)
+    write_log(" GITHUB SYNCED", "Cyan")
+else:
+    write_log("[ERROR] TEST FAILED: Could not extract numeric result.", "Red")
+    sys.exit(1)
+
+# ==============================================================================
+# 10. DURATION CALCULATION
+# ==============================================================================
+duration = datetime.datetime.now() - start_time
+minutes, seconds = divmod(duration.seconds, 60)
+write_log(f"[7/7] VibeGarden Pipeline Finished Successfully in {minutes} min {seconds} sec!", "Yellow")
