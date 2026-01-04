@@ -144,11 +144,11 @@ Write-Host "----------------------" -ForegroundColor Gray
 
 # A. Regex captures the decimal/number even with commas
 #if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
-if ($testResults -match "VibeGarden Result:[^\d]*(?<val>[\d,.]+)") {
+if ($testResults -match "VibeGarden Result:.*?(?<val>[\d,.]+)") {
     #$foundValue = $Matches['val'].Trim()
-    $foundValue = $Matches['val']
-    if ($null -ne $foundValue) {
-        $foundValue = $foundValue.Trim()
+
+    if ($Matches.ContainsKey('val')) {
+        $foundValue = $Matches['val'].Trim()
         Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
         # SUCCESS GATE: Only push to GitHub if we reached this line
         Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
@@ -157,7 +157,8 @@ if ($testResults -match "VibeGarden Result:[^\d]*(?<val>[\d,.]+)") {
         Write-Log " GITHUB SYNCED" "Cyan"
     }
     else {
-        Write-Log "[ERROR] Label found but numeric value was null." "Red"
+        Write-Log "[ERROR] Label found but regex could not capture the numeric value." "Red"
+        Write-Host "Raw data: $testResults" -ForegroundColor Gray
         exit 1
     }
 }
