@@ -59,11 +59,12 @@ $logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
 # B. Write logs into the new log file
 function Write-Log($msg, $color) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Host "`n$msg" -ForegroundColor $color
+    # 1. Print to Terminal with Color
+    Write-Host "$msg" -ForegroundColor $color
     Write-Host "`n****************************************"
 
-    # C. # Still write the plain text to the log file
-    "[$timestamp] $($msg.Trim())" | Out-File -FilePath $logFile -Append
+    # 2. Save to File WITHOUT weird characters/extra newlines
+    "[$timestamp] $msg" | Out-File -FilePath $logFile -Append
 }
 
 #==============================================================================
@@ -139,7 +140,7 @@ $testResults = zowe jobs view spool-file-by-id $jobId $sysoutId --user $myUSER_I
 Write-Log "[5/7] Validating Result Logic..." "Yellow"
 
 Write-Host "--- PROGRAM OUTPUT ---" -ForegroundColor Gray
-$testResults.Trim()
+Write-Host $testResults.Trim() -ForegroundColor White
 Write-Host "----------------------" -ForegroundColor Gray
 
 # A. DIRECT EXTRACTION: We search and capture in one command without using $Matches
