@@ -121,7 +121,7 @@ Write-Log " COMPILE SUCCESS" "Green"
 #==============================================================================
 # 8. EXECUTION SECTION
 #==============================================================================
-Write-Log "[4/7] Running Automated ather (RUNJCL)..." "Yellow"
+Write-Log "[4/7] Running Automated TESTS (RUNJCL)..." "Yellow"
 $runRaw = zowe jobs submit data-set "$JCL_PDS(RUNJCL)" --wait-for-output --rfj --user $myUSER_ID --pass $myPASSWORD
 $runJob = $runRaw | ConvertFrom-Json
 $jobId = $runJob.data.jobid
@@ -148,7 +148,7 @@ if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
     Write-Host $Matches['val'].Trim()
     $foundValue = $Matches['val'].Trim()
     Write-Host "foundvalue is" $foundValue
-    Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
+    Write-Log " TESTS PASSED: Captured Result: $foundValue" "Green"
 
     # SUCCESS GATE: Only push to GitHub if we reached this line
     Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
