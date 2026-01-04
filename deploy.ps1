@@ -142,33 +142,25 @@ Write-Host "--- PROGRAM OUTPUT ---" -ForegroundColor Gray
 $testResults.Trim()
 Write-Host "----------------------" -ForegroundColor Gray
 
-# A. Regex captures the decimal/number even with commas
-#if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
-if ($testResults -match "VibeGarden Result:\s*(?<val>[\d,.]+)") {
-    $foundValue = $Matches['val']
+# A. DIRECT EXTRACTION: We search and capture in one command without using $Matches
+$regexPattern = "VibeGarden Result:\s*(?<val>[\d,.]+)"
+$foundValue = ([regex]::Match($testResults, $regexPattern)).Groups['val'].Value
 
-    #if ($Matches.ContainsKey('val')) {
-    if ($null -ne $foundValue) {
-        $foundValue = $Matches['val'].Trim()
-        Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
-        # SUCCESS GATE: Only push to GitHub if we reached this line
-        Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
-        git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
-        git push
-        Write-Log " GITHUB SYNCED" "Cyan"
-    }
-    else {
-        Write-Host "inside null -ne foundvalue check is $foundValue"
-        Write-Host "Raw data inside null -ne foundvalue check: $testResults" -ForegroundColor Gray
-        Write-Log "[ERROR] Label found but regex could not capture the numeric value." "Red"
-        exit 1
-    }
+# B. Validation Gate: This check will now work because $foundValue is never a null array
+if (-not [string]::IsNullOrWhiteSpace($foundValue)) {
+    $foundValue = $foundValue.Trim()
+    Write-Host "found value is $foundValue" -ForegroundColor Gray
+    Write-Log "  TESTS PASSED: Captured Result: $foundValue" "Green"
+
+    # SUCCESS GATE: Only push to GitHub if we reached this line
+    Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
+    git commit --amend -m "VibeGarden Success: Job $jobId - Result $foundValue"
+    git push
+    Write-Log " GITHUB SYNCED" "Cyan"
 }
 else {
-    Write-Host "Raw data: $testResults" -ForegroundColor Gray
-    Write-Host "foundvaue is $foundValue"
-    Write-Log "[ERROR] TEST FAILED: Result mismatch." "Red"
-    Write-Log " [RUNTIME ERROR] WARNING: Code is updated on Mainframe but NOT pushed to GitHub (Fix the error first)." "Yellow"
+    Write-Log "[ERROR] TEST FAILED: Could not extract numeric result from output." "Red"
+    Write-Log " [RUNTIME ERROR] WARNING: Code updated on Mainframe but NOT on GitHub." "Yellow"
     exit 1
 }
 
