@@ -50,7 +50,8 @@ def run_deploy():
 
     # B. MAINFRAME COMPILE (Matches zowe zos-jobs submit)
     write_log("Submitting COBOL Compile to Mainframe...", "INFO")
-    compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL' --wait"
+    #compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL' --wait"
+    compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL'"
     cp_res = subprocess.run(compile_cmd, shell=True, capture_output=True, text=True)
     # Add this temporarily to see the real error
     print("DEBUG STDERR:", cp_res.stderr)
