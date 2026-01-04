@@ -145,7 +145,9 @@ Write-Host "----------------------" -ForegroundColor Gray
 $foundValue = ""
 # A. Regex captures the decimal/number even with commas
 if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
+    Write-Host $Matches['val'].Trim()
     $foundValue = $Matches['val'].Trim()
+    Write-Host "foundvalue is" $foundValue
     Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
 
     # SUCCESS GATE: Only push to GitHub if we reached this line
