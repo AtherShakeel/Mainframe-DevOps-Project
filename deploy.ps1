@@ -144,7 +144,7 @@ Write-Host "----------------------" -ForegroundColor Gray
 
 # A. Regex captures the decimal/number even with commas
 #if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
-if ($testResults -match "VibeGarden Result:\s+(?<val>[\d,.]+)\s+") {
+if ($testResults -match "VibeGarden Result:\s*(?<val>[\d,.]+)") {
     #$foundValue = $Matches['val']
 
     #if ($Matches.ContainsKey('val')) {
