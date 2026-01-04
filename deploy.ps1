@@ -137,17 +137,25 @@ $testResults = zowe jobs view spool-file-by-id $jobId $sysoutId --user $myUSER_I
 # 9. VALIDATION & GITHUB PUSH
 #==============================================================================
 Write-Log "[5/7] Validating Result Logic..." "Yellow"
-# A. Store the program output in a variable so it doesn't change
-$outputLines = $testResults.Trim()
+
 
 Write-Host "--- PROGRAM OUTPUT ---" -ForegroundColor Gray
-$outputLines
+$testResults.Trim()
 Write-Host "----------------------" -ForegroundColor Gray
 
+# 1. Use Select-String to find the specific line and capture the group
+$matchObj = $testResults | Select-String -Pattern "VibeGarden Result:\s+(?<val>[\d,.]+)"
+
 # A. Regex captures the decimal/number even with commas
-if ($outputLines -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
-    $foundValue = $Matches['val'].Trim()
+if ($matchObj) {
+    # 2. Extract the value from the match object safely
+    $foundValue = $matchObj.Matches.Groups['val'].Value.Trim()
+
     Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
+
+    #if ($outputLines -match "VibeGarden Result:\s+(?<val>[\d,.]+)") {
+    #    $foundValue = $Matches['val'].Trim()
+    #    Write-Log " TEST PASSED: Captured Result: $foundValue" "Green"
 
     # SUCCESS GATE: Only push to GitHub if we reached this line
     Write-Log "[6/7] Success! Pushing 'Blessed' code to GitHub..." "Yellow"
