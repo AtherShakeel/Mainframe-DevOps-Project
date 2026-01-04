@@ -54,23 +54,27 @@ $COBOL_PDS = "$($myUSER_ID).ZMYPRSNL.COBOL"
 # A. Log File Setup
 $logDir = "./logs"
 if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory }
-$logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
+$logFile = "$logDir/deploy-$(Get-Date -Format 'yyyyMMdd-HHmm').md"
 
 # B. Write logs into the new log file
 function Write-Log($msg, $color) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    # 1. Print to Terminal with Color
-    Write-Host "$msg" -ForegroundColor $color
-    Write-Host "`n****************************************"
 
-    # 2. Save to File WITHOUT weird characters/extra newlines
-    # Add Status Prefixes for the Log File. This helps you "Search" the log later even without colors
-    $logPrefix = "INFO "
-    if ($color -eq "Red") { $logPrefix = "ERROR" }
-    if ($color -eq "Green") { $logPrefix = "PASS " }
-    if ($color -eq "Yellow") { $logPrefix = "WARN " }
+    # 1. Keep Terminal Colors for your live view
+    Write-Host "[$timestamp] $msg" -ForegroundColor $color
 
-    "[$timestamp] [$logPrefix] $msg" | Out-File -FilePath $logFile -Append
+    # 2. Markdown Formatting for the Log File
+    # # = Green (Heading 1), > = Cyan (Blockquote), - = Yellow/White (List)
+    $mdLine = switch ($color) {
+        "Green" { "## PASS: $msg" }     # Bold Green-ish Header
+        "Red" { "## ERROR: $msg" }    # Bold Red-ish Header
+        "Cyan" { "> SYNC: $msg" }       # Indented Blue-ish block
+        "Yellow" { "- INFO: $msg" }       # Bulleted Yellow-ish line
+        "Orange" { "- WARN: $msg" }
+        Default { "  $msg" }
+    }
+
+    "[$timestamp] $mdLine  " | Out-File -FilePath $logFile -Append
 }
 
 #==============================================================================
