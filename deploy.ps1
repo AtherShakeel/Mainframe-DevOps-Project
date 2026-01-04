@@ -64,7 +64,13 @@ function Write-Log($msg, $color) {
     Write-Host "`n****************************************"
 
     # 2. Save to File WITHOUT weird characters/extra newlines
-    "[$timestamp] $msg" | Out-File -FilePath $logFile -Append
+    # Add Status Prefixes for the Log File. This helps you "Search" the log later even without colors
+    $logPrefix = "INFO "
+    if ($color -eq "Red") { $logPrefix = "ERROR" }
+    if ($color -eq "Green") { $logPrefix = "PASS " }
+    if ($color -eq "Yellow") { $logPrefix = "WARN " }
+
+    "[$timestamp] [$logPrefix] $msg" | Out-File -FilePath $logFile -Append
 }
 
 #==============================================================================
