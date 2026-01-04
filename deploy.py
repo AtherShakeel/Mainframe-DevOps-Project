@@ -52,9 +52,11 @@ def run_deploy():
     write_log("Submitting COBOL Compile to Mainframe...", "INFO")
     compile_cmd = "zowe zos-jobs submit local-file './COBOL/VIBE.cbl' --directory './JCL' --wait"
     cp_res = subprocess.run(compile_cmd, shell=True, capture_output=True, text=True)
+    # Add this temporarily to see the real error
+    print("DEBUG STDERR:", cp_res.stderr)
+    print("DEBUG STDOUT:", cp_res.stdout)
 
     if cp_res.returncode != 0:
-        print(cp_res.returncode)
         write_log("Zowe command failed to execute.", "ERROR")
         sys.exit(1)
 
