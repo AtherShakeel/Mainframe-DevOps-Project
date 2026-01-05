@@ -28,7 +28,7 @@ z_pass = args.passw
 # 2. PRE-FLIGHT CHECK
 # ==============================================================================
 def check_cmd(cmd, name):
-    check = subprocess.run(f"where {cmd}", shell=True, capture_output=True)
+    check = subprocess.run(f"where {cmd}", shell=True)
     if check.returncode != 0:
         print(f"\033[91m[ERROR] {name} is NOT installed.\033[0m")
         sys.exit(1)
@@ -88,14 +88,18 @@ files_to_upload = [
 
 for local, remote in files_to_upload:
     cmd = f"zowe files upload file-to-data-set \"{local}\" \"{remote}\" --user {z_user} --pass {z_pass}"
-    subprocess.run(cmd, shell=True, capture_output=True)
+    #subprocess.run(cmd, shell=True, capture_output=True)
+    # 2. Update your subprocess line to show live logs
+    # This removes 'capture_output' so Jenkins can see everything
+    print(f"Executing: {' '.join(cmd)}") # This helps us see the exact command being run
+    subprocess.run(cmd, shell=True)
 
 # ==============================================================================
 # 6. COMPILE & EXECUTE
 # ==============================================================================
 write_log("Compiling COBOL...", "Yellow")
 comp_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(COMPJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass}"
-comp_res = subprocess.run(comp_cmd, shell=True, capture_output=True, text=True)
+comp_res = subprocess.run(comp_cmd, shell=True)
 
 try:
     rc = json.loads(comp_res.stdout).get("data", {}).get("retcode", "UNKNOWN")
@@ -108,17 +112,17 @@ if rc not in ["CC 0000", "CC 0004"]:
 
 write_log("Running Tests...", "Yellow")
 run_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(RUNJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass}"
-run_res = subprocess.run(run_cmd, shell=True, capture_output=True, text=True)
+run_res = subprocess.run(run_cmd, shell=True)
 run_data = json.loads(run_res.stdout)
 job_id = run_data.get("data", {}).get("jobid")
 
 # Spool Retrieval
 spool_cmd = f"zowe jobs list spool-files-by-jobid {job_id} --rfj --user {z_user} --pass {z_pass}"
-spool_list = json.loads(subprocess.run(spool_cmd, shell=True, capture_output=True, text=True).stdout)
+spool_list = json.loads(subprocess.run(spool_cmd, shell=True).stdout)
 all_sysouts = [f["id"] for f in spool_list.get("data", []) if f["ddname"].strip() == "SYSOUT"]
 sysout_id = all_sysouts[-1] if all_sysouts else spool_list["data"][-1]["id"]
 
-test_results = subprocess.run(f"zowe jobs view spool-file-by-id {job_id} {sysout_id} --user {z_user} --pass {z_pass}", shell=True, capture_output=True, text=True).stdout
+test_results = subprocess.run(f"zowe jobs view spool-file-by-id {job_id} {sysout_id} --user {z_user} --pass {z_pass}", shell=True).stdout
 
 # ==============================================================================
 # 7. VALIDATION
