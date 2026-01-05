@@ -11,6 +11,8 @@ import argparse
 # ==============================================================================
 # Add NPM path so Jenkins finds Zowe on Windows
 os.environ["PATH"] += os.pathsep + os.path.join(os.environ.get('APPDATA', ''), 'npm')
+os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314"
+os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314\Scripts"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--user", required=True, help="Mainframe User ID")
