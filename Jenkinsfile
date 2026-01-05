@@ -22,7 +22,7 @@ pipeline {
             steps {
                 echo 'Starting Mainframe Deployment and Test...'
                 // Jenkins fills %MF_CREDS_USR% and %MF_CREDS_PSW% automatically
-                bat "python deploy-automation.py --user %MF_CREDS_USR% --passw %MF_CREDS_PSW%"
+                bat "py deploy-automation.py --user %MF_CREDS_USR% --passw %MF_CREDS_PSW%"
             }
         }
     }
