@@ -11,6 +11,8 @@ import argparse
 # ==============================================================================
 # Add NPM path so Jenkins finds Zowe on Windows
 os.environ["PATH"] += os.pathsep + os.path.join(os.environ.get('APPDATA', ''), 'npm')
+# This stops Zowe from hanging while waiting for SSL confirmation
+os.environ["ZOWE_OPT_REJECT_UNAUTHORIZED"] = "false"
 os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314"
 os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314\Scripts"
 

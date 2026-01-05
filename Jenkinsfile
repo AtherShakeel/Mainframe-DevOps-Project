@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        timeout(time: 3, unit: 'MINUTES') // Safety valve for Mainframe-Devops-Project
+    }
 
     environment {
         // This ID must match the one you created in the Jenkins Credentials vault
