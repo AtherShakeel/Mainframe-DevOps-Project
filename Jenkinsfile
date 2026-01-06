@@ -1,7 +1,9 @@
 pipeline {
     agent any
+
     options {
         timeout(time: 3, unit: 'MINUTES') // Safety valve for Mainframe-Devops-Project
+        ansiColor('xterm')               // This turns the Zowe junk codes into colors
     }
 
     environment {
