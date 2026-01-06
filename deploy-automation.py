@@ -13,6 +13,8 @@ import argparse
 os.environ["PATH"] += os.pathsep + os.path.join(os.environ.get('APPDATA', ''), 'npm')
 # This stops Zowe from hanging while waiting for SSL confirmation
 os.environ["ZOWE_OPT_REJECT_UNAUTHORIZED"] = "false"
+
+# --- YOUR CRITICAL PATHS (DO NOT REMOVE) ---
 os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314"
 os.environ["PATH"] += os.pathsep + r"C:\Users\ather\AppData\Local\Programs\Python\Python314\Scripts"
 
@@ -22,7 +24,7 @@ parser.add_argument("--passw", required=True, help="Mainframe Password")
 args = parser.parse_args()
 
 z_user = args.user
-z_pass = args.passw
+z_pass = str(args.passw) # Force string to ensure masking works 100%
 
 # ==============================================================================
 # 2. PRE-FLIGHT CHECK
@@ -54,7 +56,13 @@ log_file = os.path.join(log_dir, f"deploy-{datetime.datetime.now().strftime('%Y%
 
 def write_log(msg, color_name):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    colors = {"Green": "\033[92m", "Red": "\033[91m", "Cyan": "\033[96m", "Yellow": "\033[93m"}
+    # Switched to standard ANSI (31-36) for better visibility in Jenkins
+    colors = {
+        "Green": "\033[32m",   # Darker Green
+        "Red": "\033[31m",     # Darker Red
+        "Cyan": "\033[34m",    # Blue (easier to read than Cyan)
+        "Yellow": "\033[33m"   # Gold/Brown (much better on white logs)
+    }
     print(f"{colors.get(color_name, '')}[{timestamp}] {msg}\033[0m")
 
     md_map = {"Green": "## PASS:", "Red": "## ERROR:", "Cyan": "> SYNC:", "Yellow": "- INFO:"}
@@ -91,7 +99,7 @@ for local, remote in files_to_upload:
     # MASKING: Print command to console without the password
     log_cmd = cmd.replace(z_pass, "********")
     # This removes 'capture_output' so Jenkins can see everything
-    print(f"Executing: {' '.join(cmd)}") # This helps us see the exact command being run
+    print(f"Executing: {' '.join(log_cmd)}") # This helps us see the exact command being run
     subprocess.run(cmd, shell=True)
 
 # ==============================================================================
@@ -99,6 +107,9 @@ for local, remote in files_to_upload:
 # ==============================================================================
 write_log("Compiling COBOL...", "Yellow")
 comp_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(COMPJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass} --ru false"
+
+# Mask the compile command too
+print(f"Executing: {comp_cmd.replace(z_pass, '********')}")
 # We MUST capture output here so the json.loads() below has data to read
 comp_res = subprocess.run(comp_cmd, shell=True, capture_output=True, text=True)
 print(comp_res.stdout) # Manually print it so you can see it in Jenkins
@@ -114,6 +125,8 @@ if rc not in ["CC 0000", "CC 0004"]:
 
 write_log("Running Tests...", "Yellow")
 run_cmd = f"zowe jobs submit data-set \"{JCL_PDS}(RUNJCL)\" --wait-for-output --rfj --user {z_user} --pass {z_pass} --ru false"
+
+print(f"Executing: {run_cmd.replace(z_pass, '********')}")
 run_res = subprocess.run(run_cmd, shell=True, capture_output=True, text=True)
 print(run_res.stdout)
 
@@ -125,15 +138,29 @@ except:
     sys.exit(1)
 
 # Spool Retrieval
+# A. List all spool files for the job
 spool_cmd = f"zowe jobs list spool-files-by-jobid {job_id} --rfj --user {z_user} --pass {z_pass} --ru false"
+
+# B. Mask it before printing so Jenkins is safe
+print(f"Executing: {spool_cmd.replace(z_pass, '********')}")
+
 spool_res = subprocess.run(spool_cmd, shell=True, capture_output=True, text=True)
 spool_list = json.loads(spool_res.stdout)
 
+# C. Identify the correct SYSOUT ID
 all_sysouts = [f["id"] for f in spool_list.get("data", []) if f["ddname"].strip() == "SYSOUT"]
 sysout_id = all_sysouts[-1] if all_sysouts else spool_list["data"][-1]["id"]
 
-test_results_res= subprocess.run(f"zowe jobs view spool-file-by-id {job_id} {sysout_id} --user {z_user} --pass {z_pass} --ru false", shell=True,capture_output=True, text=True)
+# D. View the specific spool file content
+view_cmd = f"zowe jobs view spool-file-by-id {job_id} {sysout_id} --user {z_user} --pass {z_pass} --ru false"
+# SECURITY FIX: Mask the view command before printing
+print(f"Executing: {view_cmd.replace(z_pass, '********')}")
+
+# Run and capture the actual test results
+test_results_res = subprocess.run(view_cmd, shell=True, capture_output=True, text=True)
 test_results = test_results_res.stdout
+
+# PRINT the result so it appears in Jenkins logs
 print(test_results)
 
 # ==============================================================================
